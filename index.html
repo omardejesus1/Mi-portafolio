@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Portafolio 3D</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: #f4f4f4;
+      color: #333;
+      transition: 0.3s;
+    }
+
+    /* --------- MODO OSCURO --------- */
+    body.dark-mode {
+      background: #121212;
+      color: #f4f4f4;
+    }
+
+    body.dark-mode header {
+      background: #000;
+    }
+
+    body.dark-mode .upload-box,
+    body.dark-mode .card,
+    body.dark-mode nav {
+      background: #1e1e1e;
+      color: white;
+    }
+
+    body.dark-mode footer {
+      background: #000;
+    }
+
+    body.dark-mode input {
+      background: #2b2b2b;
+      color: white;
+      border: 1px solid #444;
+    }
+
+    /* --------- NAVBAR --------- */
+    nav {
+      background: #222;
+      padding: 15px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    nav a:hover {
+      color: #00d4ff;
+    }
+
+    .toggle-btn {
+      background: #007bff;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    .toggle-btn:hover {
+      background: #0056b3;
+    }
+
+    /* --------- HEADER --------- */
+    header {
+      background: #222;
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+    }
+
+    header p {
+      margin-top: 10px;
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+
+    #clock {
+      margin-top: 15px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      opacity: 0.9;
+    }
+
+    /* --------- CONTAINER --------- */
+    .container {
+      width: 90%;
+      max-width: 1100px;
+      margin: 40px auto;
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .upload-box {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    .upload-box input, .upload-box button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+
+    .upload-box button {
+      background: #28a745;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      transition: 0.3s;
+    }
+
+    .upload-box button:hover {
+      background: #1e7e34;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0px 6px 15px rgba(0,0,0,0.15);
+    }
+
+    .card h3 {
+      font-size: 1.4rem;
+      margin-bottom: 10px;
+      color: #222;
+    }
+
+    .card p {
+      font-size: 0.95rem;
+      margin-bottom: 15px;
+      opacity: 0.9;
+    }
+
+    body.dark-mode .card h3 {
+      color: white;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 15px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: white;
+      background: #007bff;
+      font-weight: bold;
+      transition: 0.3s;
+      margin-right: 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: #0056b3;
+    }
+
+    .btn-delete {
+      background: #dc3545;
+    }
+
+    .btn-delete:hover {
+      background: #a71d2a;
+    }
+
+    .btn-edit {
+      background: #ffc107;
+      color: black;
+    }
+
+    .btn-edit:hover {
+      background: #e0a800;
+    }
+
+    /* --------- SECCIONES --------- */
+    section {
+      padding: 40px 0;
+    }
+
+    .info-box {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    body.dark-mode .info-box {
+      background: #1e1e1e;
+      color: white;
+    }
+
+    /* --------- FOOTER --------- */
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: #222;
+      color: white;
+      margin-top: 40px;
+    }
+
+    footer p {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <nav>
+    <a href="#inicio">Inicio</a>
+    <a href="#sobre">Sobre ti</a>
+    <a href="#diseno3d">Diseño 3D</a>
+    <a href="#skills">Habilidades</a>
+
+    <button class="toggle-btn" onclick="toggleMode()">🌙/☀️ Modo</button>
+  </nav>
+
+  <!-- HEADER -->
+  <header id="inicio">
+    <h1>Mi Portafolio 3D</h1>
+    <p>Sube actividades, edítalas y descárgalas fácilmente</p>
+    <p id="clock"></p>
+  </header>
+
+  <div class="container">
+
+    <!-- SOBRE TI -->
+    <section id="sobre">
+      <h2 class="section-title">🙋 Sobre mí</h2>
+      <div class="info-box">
+        <p>
+          Hola, soy <b>Omar</b>. Este es mi portafolio donde puedo guardar mis actividades,
+          proyectos y prácticas de Diseño 3D, Aquí subiré archivos.
+        </p>
+      </div>
+    </section>
+
+    <!-- DISEÑO 3D -->
+    <section id="diseno3d">
+      <h2 class="section-title">🎨 Diseño 3D (Prácticas)</h2>
+
+      <div class="upload-box">
+        <label>Nombre de la actividad:</label>
+        <input type="text" id="activityName" placeholder="">
+
+        <label>Descripción:</label>
+        <input type="text" id="activityDesc" placeholder="">
+
+        <label>Selecciona un archivo:</label>
+        <input type="file" id="activityFile">
+
+        <button id="mainButton" onclick="addActivity()">➕ Agregar Actividad</button>
+      </div>
+
+      <h2 class="section-title">📌 Mis Actividades</h2>
+      <div class="grid" id="activitiesGrid"></div>
+    </section>
+
+    <!-- SKILLS -->
+    <section id="skills">
+      <h2 class="section-title">🛠 Habilidades / Skills</h2>
+      <div class="info-box">
+        <ul>
+          <li>HTML, CSS, JavaScript</li>
+          <li>Python</li>
+          <li>PostgreSQL</li>
+          <li>Pygame</li>
+          <li>PHP</li>
+        </ul>
+      </div>
+    </section>
+
+    
+    
+
+  </div>
+
+  <footer>
+    <p>© 2026 - Mi Portafolio | Creado por Omar</p>
+  </footer>
+
+  <script>
+    let activities = JSON.parse(localStorage.getItem("activities")) || [];
+    let editIndex = null;
+
+    // --------- RELOJ ---------
+    function updateClock() {
+      const now = new Date();
+
+      const day = String(now.getDate()).padStart(2, "0");
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const year = now.getFullYear();
+
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const seconds = String(now.getSeconds()).padStart(2, "0");
+
+      document.getElementById("clock").textContent =
+        `📅 ${day}/${month}/${year}  ⏰ ${hours}:${minutes}:${seconds}`;
+    }
+
+    // --------- GUARDAR ACTIVIDADES ---------
+    function saveActivities() {
+      localStorage.setItem("activities", JSON.stringify(activities));
+    }
+
+    // --------- RESETEAR FORMULARIO ---------
+    function resetForm() {
+      document.getElementById("activityName").value = "";
+      document.getElementById("activityDesc").value = "";
+      document.getElementById("activityFile").value = "";
+
+      editIndex = null;
+
+      const btn = document.getElementById("mainButton");
+      btn.textContent = "➕ Agregar Actividad";
+      btn.style.background = "#28a745";
+      btn.style.color = "white";
+    }
+
+    // --------- AGREGAR O EDITAR ---------
+    function addActivity() {
+      const name = document.getElementById("activityName").value.trim();
+      const desc = document.getElementById("activityDesc").value.trim();
+      const fileInput = document.getElementById("activityFile");
+      const file = fileInput.files[0];
+
+      if (!name || !desc) {
+        alert("⚠️ Por favor llena el nombre y la descripción.");
+        return;
+      }
+
+      // Editando
+      if (editIndex !== null) {
+
+        if (file) {
+          const reader = new FileReader();
+
+          reader.onload = function(e) {
+            activities[editIndex].name = name;
+            activities[editIndex].desc = desc;
+            activities[editIndex].fileName = file.name;
+            activities[editIndex].fileData = e.target.result;
+
+            saveActivities();
+            renderActivities();
+            resetForm();
+          };
+
+          reader.readAsDataURL(file);
+
+        } else {
+          activities[editIndex].name = name;
+          activities[editIndex].desc = desc;
+
+          saveActivities();
+          renderActivities();
+          resetForm();
+        }
+
+        return;
+      }
+
+      // Nueva actividad
+      if (!file) {
+        alert("⚠️ Selecciona un archivo para agregar una nueva actividad.");
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const activity = {
+          name: name,
+          desc: desc,
+          fileName: file.name,
+          fileData: e.target.result,
+          date: new Date().toLocaleString()
+        };
+
+        activities.push(activity);
+        saveActivities();
+        renderActivities();
+        resetForm();
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    // --------- MOSTRAR ACTIVIDADES ---------
+    function renderActivities() {
+      const grid = document.getElementById("activitiesGrid");
+      grid.innerHTML = "";
+
+      activities.forEach((activity, index) => {
+        const card = document.createElement("div");
+        card.classList.add("card");
+
+        card.innerHTML = `
+          <h3>${activity.name}</h3>
+          <p>${activity.desc}</p>
+          <p><b>Archivo:</b> ${activity.fileName}</p>
+          <p><b>Fecha:</b> ${activity.date || "No registrada"}</p>
+
+          <a class="btn" href="${activity.fileData}" download="${activity.fileName}">
+            ⬇ Descargar
+          </a>
+
+          <button class="btn btn-edit" onclick="editActivity(${index})">
+            ✏ Editar
+          </button>
+
+          <button class="btn btn-delete" onclick="deleteActivity(${index})">
+            🗑 Eliminar
+          </button>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    // --------- ELIMINAR ---------
+    function deleteActivity(index) {
+      if (confirm("¿Seguro que deseas eliminar esta actividad?")) {
+        activities.splice(index, 1);
+        saveActivities();
+        renderActivities();
+        resetForm();
+      }
+    }
+
+    // --------- EDITAR ---------
+    function editActivity(index) {
+      const activity = activities[index];
+
+      document.getElementById("activityName").value = activity.name;
+      document.getElementById("activityDesc").value = activity.desc;
+
+      editIndex = index;
+
+      const btn = document.getElementById("mainButton");
+      btn.textContent = "💾 Guardar Cambios";
+      btn.style.background = "#ffc107";
+      btn.style.color = "black";
+    }
+
+    // --------- MODO OSCURO ---------
+    function toggleMode() {
+      document.body.classList.toggle("dark-mode");
+
+      if (document.body.classList.contains("dark-mode")) {
+        localStorage.setItem("theme", "dark");
+      } else {
+        localStorage.setItem("theme", "light");
+      }
+    }
+
+    function loadMode() {
+      const theme = localStorage.getItem("theme");
+
+      if (theme === "dark") {
+        document.body.classList.add("dark-mode");
+      }
+    }
+
+    // --------- INICIO ---------
+    loadMode();
+    renderActivities();
+
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+
+</body>
+</html>
