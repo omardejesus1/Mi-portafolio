@@ -254,7 +254,17 @@
 
     footer p {
       opacity: 0.8;
+      
     }
+
+    .actividades {
+      display: flex;
+      gap: 20px;
+      color: white;
+      flex-wrap: wrap;
+    }
+
+
   </style>
 </head>
 
@@ -264,7 +274,6 @@
   <nav>
     <a href="#inicio">Inicio</a>
     <a href="#sobre">Sobre ti</a>
-    <a href="#diseno3d">Diseño 3D</a>
     <a href="#skills">Habilidades</a>
 
     <button class="toggle-btn" onclick="toggleMode()">🌙/☀️ Modo</button>
@@ -292,22 +301,40 @@
 
     <!-- DISEÑO 3D -->
     <section id="diseno3d">
-      <h2 class="section-title">🎨 Diseño 3D (Prácticas)</h2>
-
-      <div class="upload-box">
-        <label>Nombre de la actividad:</label>
-        <input type="text" id="activityName" placeholder="">
-
-        <label>Descripción:</label>
-        <input type="text" id="activityDesc" placeholder="">
-
-        <label>Selecciona un archivo:</label>
-        <input type="file" id="activityFile">
-
-        <button id="mainButton" onclick="addActivity()">➕ Agregar Actividad</button>
       </div>
-
+      
       <h2 class="section-title">📌 Mis Actividades</h2>
+      <div class=" actividades">
+      <a href="actividades/cubo.html" target="_blank" style="display:inline-block; width:30%;">
+  
+  <div style="width:10%; height:150px; overflow:hidden; border:2px solid red; border-radius:10px;">
+    
+    <iframe 
+      src="actividades/cubo.html"
+      width="-9%" 
+      height="-50px"
+      style="border:none; pointer-events:none;">
+    </iframe>
+</a>
+
+
+  </div>
+
+
+  <a href="actividades/cubo orbit Controls.html" target="_blank" style="display:inline-block; width:30%;">
+  
+  <div style="width:10%; height:150px; overflow:hidden; border:2px solid red; border-radius:10px;">
+    
+    <iframe 
+      src="actividades/cubo orbit Controls.html"
+      width="-9%" 
+      height="-50px"
+      style="border:none; pointer-events:none;">
+    </iframe>
+</a>
+</div>
+
+
       <div class="grid" id="activitiesGrid"></div>
     </section>
 
