@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema Solar</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: black; 
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 12px 24px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 2px solid #ffaa00;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(255, 170, 0, 0.3);
+        }
+        button:hover {
+            background: rgba(255, 170, 0, 0.3);
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(255, 170, 0, 0.5);
+        }
+        .info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border-left: 3px solid #ffaa00;
+        }
+        .cargando {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            background: rgba(0,0,0,0.7);
+            padding: 20px 40px;
+            border-radius: 10px;
+            z-index: 20;
+            border: 2px solid #ffaa00;
+        }
+        .error {
+            position: absolute;
+            bottom: 80px;
+            left: 20px;
+            color: #ff6666;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 30;
+            font-size: 14px;
+            max-width: 300px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <button id="btnPausa">⏸️ Pausar</button>
+    <div class="info">🌌 Sistema Solar 3D</div>
+    <div class="cargando" id="cargando">Cargando texturas... ⏳</div>
+    <div class="error" id="error"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // Función para mostrar errores
+        function mostrarError(mensaje) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.style.display = 'block';
+            errorDiv.innerHTML = mensaje;
+            console.error(mensaje);
+        }
+
+        // Ocultar mensaje de carga
+        function ocultarCargando() {
+            document.getElementById('cargando').style.display = 'none';
+        }
+
+        // =======================
+        // ESCENA
+        // =======================
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x03030a);
+
+        const camera = new THREE.PerspectiveCamera(
+            45,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            2000
+        );
+        camera.position.set(0, 100, 500);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = false;
+        controls.enableZoom = true;
+        controls.maxDistance = 1200;
+        controls.minDistance = 100;
+
+        // =======================
+        // LUCES
+        // =======================
+        const ambientLight = new THREE.AmbientLight(0x404060);
+        scene.add(ambientLight);
+
+        const sunLight = new THREE.PointLight(0xffeedd, 2, 0, 0);
+        sunLight.position.set(0, 0, 0);
+        scene.add(sunLight);
+
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        fillLight.position.set(1, 1, 1);
+        scene.add(fillLight);
+
+        const backLight = new THREE.DirectionalLight(0x446688, 0.3);
+        backLight.position.set(-1, -0.5, -1);
+        scene.add(backLight);
+
+        // =======================
+        // ESTRELLAS DE FONDO
+        // =======================
+        const starsGeometry = new THREE.BufferGeometry();
+        const starsCount = 4000;
+        const starsPositions = new Float32Array(starsCount * 3);
+        
+        for (let i = 0; i < starsCount * 3; i += 3) {
+            starsPositions[i] = (Math.random() - 0.5) * 2000;
+            starsPositions[i+1] = (Math.random() - 0.5) * 2000;
+            starsPositions[i+2] = (Math.random() - 0.5) * 2000;
+        }
+        
+        starsGeometry.setAttribute('position', new THREE.BufferAttribute(starsPositions, 3));
+        const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.3, transparent: true });
+        const stars = new THREE.Points(starsGeometry, starsMaterial);
+        scene.add(stars);
+
+        // =======================
+        // CARGADOR DE TEXTURAS CON RUTA CORREGIDA
+        // =======================
+        const loader = new THREE.TextureLoader();
+        let texturasCargadas = 0;
+        let texturasConError = 0;
+        const totalTexturas = 9; // Sol + 8 planetas
+
+        // IMPORTANTE: Aquí especificamos la carpeta donde están las imágenes
+        const rutaCarpeta = './sistema solar/'; // ¡Asegúrate que esta sea la ruta correcta!
+        
+        // Lista de texturas con sus rutas completas
+        const texturas = [
+            { nombre: 'Sol', archivo: 'sun.jpg' },
+            { nombre: 'Mercurio', archivo: 'mercury.jpg' },
+            { nombre: 'Venus', archivo: 'venus.jpg' },
+            { nombre: 'Tierra', archivo: 'tierra.jpg' },
+            { nombre: 'Marte', archivo: 'marte.jpg' },
+            { nombre: 'Júpiter', archivo: 'jupiter.jpg' },
+            { nombre: 'Saturno', archivo: 'saturno.jpg' },
+            { nombre: 'Urano', archivo: 'urano.jpg' },
+            { nombre: 'Neptuno', archivo: 'neptuno.jpg' }
+        ];
+
+        function texturaCargada() {
+            texturasCargadas++;
+            console.log(`Textura cargada: ${texturasCargadas}/${totalTexturas}`);
+            if (texturasCargadas + texturasConError === totalTexturas) {
+                if (texturasConError > 0) {
+                    mostrarError(`⚠️ ${texturasConError} texturas no pudieron cargarse. Verifica que los archivos JPG estén en la carpeta "sistema solar"`);
+                }
+                ocultarCargando();
+            }
+        }
+
+        function texturaError(nombre) {
+            texturasConError++;
+            console.error(`Error cargando textura: ${nombre}`);
+            texturaCargada(); // Contar como procesada aunque tenga error
+        }
+
+        // =======================
+        // SOL
+        // =======================
+        const sunGeometry = new THREE.SphereGeometry(25, 128, 128);
+        
+        // Cargar textura del sol con la ruta completa
+        const sunTexture = loader.load(
+            rutaCarpeta + 'sun.jpg', 
+            texturaCargada,
+            undefined,
+            (err) => texturaError('Sol')
+        );
+        
+        const sunMaterial = new THREE.MeshStandardMaterial({
+            map: sunTexture,
+            emissive: 0xff5500,
+            emissiveIntensity: 1.5,
+            color: 0xffaa33
+        });
+        
+        const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+        scene.add(sun);
+
+        // Añadir un resplandor al sol
+        const sunGlowGeometry = new THREE.SphereGeometry(26, 64, 64);
+        const sunGlowMaterial = new THREE.MeshBasicMaterial({
+            color: 0xff6600,
+            transparent: true,
+            opacity: 0.2
+        });
+        const sunGlow = new THREE.Mesh(sunGlowGeometry, sunGlowMaterial);
+        scene.add(sunGlow);
+
+        // =======================
+        // FUNCIÓN PLANETAS
+        // =======================
+        function createPlanet(size, textureFile, distance, orbitSpeed, rotationSpeed, nombre, hasRings = false) {
+            const orbitGroup = new THREE.Object3D();
+            scene.add(orbitGroup);
+            
+            // Cargar textura del planeta con la ruta completa
+            const texture = loader.load(
+                rutaCarpeta + textureFile,
+                texturaCargada,
+                undefined,
+                (err) => texturaError(nombre)
+            );
+            
+            const material = new THREE.MeshStandardMaterial({
+                map: texture,
+                roughness: 0.4,
+                metalness: 0.1,
+                emissive: 0x000000
+            });
+            
+            const planet = new THREE.Mesh(
+                new THREE.SphereGeometry(size, 64, 64),
+                material
+            );
+            
+            planet.position.x = distance;
+            orbitGroup.add(planet);
+            
+            // Añadir una órbita visual
+            const orbitLineGeometry = new THREE.BufferGeometry();
+            const points = [];
+            const segments = 128;
+            
+            for (let i = 0; i <= segments; i++) {
+                const angle = (i / segments) * Math.PI * 2;
+                points.push(new THREE.Vector3(Math.cos(angle) * distance, 0, Math.sin(angle) * distance));
+            }
+            
+            orbitLineGeometry.setFromPoints(points);
+            const orbitLineMaterial = new THREE.LineBasicMaterial({ color: 0x446688, transparent: true, opacity: 0.2 });
+            const orbitLine = new THREE.LineLoop(orbitLineGeometry, orbitLineMaterial);
+            scene.add(orbitLine);
+            
+            return { planet, orbitGroup, orbitSpeed, rotationSpeed, hasRings, nombre };
+        }
+
+        // =======================
+        // CREAR PLANETAS CON SUS TEXTURAS
+        // =======================
+        const planets = [
+            createPlanet(4, "mercury.jpg", 60, 0.8, 1.2, "Mercurio"),
+            createPlanet(6, "venus.jpg", 90, 0.6, 0.9, "Venus"),
+            createPlanet(6.5, "tierra.jpg", 125, 0.5, 0.8, "Tierra"),
+            createPlanet(5, "marte.jpg", 160, 0.4, 0.7, "Marte"),
+            createPlanet(14, "jupiter.jpg", 220, 0.2, 0.5, "Júpiter"),
+            createPlanet(12, "saturno.jpg", 280, 0.15, 0.4, "Saturno", true),
+            createPlanet(9, "urano.jpg", 340, 0.1, 0.3, "Urano"),
+            createPlanet(9, "neptuno.jpg", 400, 0.08, 0.25, "Neptuno")
+        ];
+
+        // =======================
+        // AÑADIR ANILLOS A SATURNO
+        // =======================
+        if (planets[5]) {
+            // Anillo principal
+            const ringGeometry = new THREE.TorusGeometry(18, 2, 32, 200);
+            const ringMaterial = new THREE.MeshStandardMaterial({
+                color: 0xc0b0a0,
+                emissive: 0x221100,
+                transparent: true,
+                opacity: 0.7,
+                side: THREE.DoubleSide
+            });
+            const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+            ring.rotation.x = Math.PI / 2;
+            ring.rotation.z = 0.2;
+            
+            // Anillo interno más delgado
+            const ring2Geometry = new THREE.TorusGeometry(16, 1, 32, 200);
+            const ring2Material = new THREE.MeshStandardMaterial({
+                color: 0xa09080,
+                emissive: 0x110000,
+                transparent: true,
+                opacity: 0.5,
+                side: THREE.DoubleSide
+            });
+            const ring2 = new THREE.Mesh(ring2Geometry, ring2Material);
+            ring2.rotation.x = Math.PI / 2;
+            ring2.rotation.z = 0.3;
+            
+            // Añadir anillos al planeta Saturno
+            const saturnPlanet = planets[5].planet;
+            saturnPlanet.add(ring);
+            saturnPlanet.add(ring2);
+        }
+
+        // =======================
+        // ANIMACIÓN
+        // =======================
+        const clock = new THREE.Clock();
+        let paused = false;
+        
+        const btnPausa = document.getElementById("btnPausa");
+        btnPausa.addEventListener("click", () => {
+            paused = !paused;
+            btnPausa.textContent = paused ? '▶️ Reanudar' : '⏸️ Pausar';
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const delta = clock.getDelta();
+            
+            if (!paused) {
+                stars.rotation.y += 0.0001;
+                sun.rotation.y += 0.001;
+                sunGlow.rotation.y += 0.0005;
+                
+                planets.forEach(p => {
+                    p.orbitGroup.rotation.y += p.orbitSpeed * delta * 3;
+                    p.planet.rotation.y += p.rotationSpeed * delta * 2;
+                });
+            }
+            
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+
+        // =======================
+        // RESPONSIVE
+        // =======================
+        window.addEventListener("resize", () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Timeout por si alguna textura tarda mucho
+        setTimeout(ocultarCargando, 5000);
+    </script>
+</body>
+</html>
